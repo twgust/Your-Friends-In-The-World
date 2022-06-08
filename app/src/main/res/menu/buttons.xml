@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@id/useritem"
+        android:title="My Profile">
+
+        <menu>
+            <item
+                android:id="@+id/useritem"
+                android:title="User"
+                android:icon="@drawable/xml_icon_person_24"
+
+
+                />
+            <item
+                android:id="@+id/groupitem"
+                android:title="Groups"
+                android:icon="@drawable/xml_icon_groups_24"
+
+                />
+            <item
+                android:id="@+id/chatitem"
+                android:title="Chat"
+                android:icon="@drawable/xml_icon_chat_bubble_24"
+
+                />
+
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/googlemenu"
+        android:title="Google"
+        android:icon="@drawable/icon_google"
+        >
+        <menu>
+            <item
+                android:id="@+id/googlemaps"
+                android:title="Maps"
+                android:icon="@drawable/icon_maps"
+
+                />
+        </menu>
+    </item>
+</menu>

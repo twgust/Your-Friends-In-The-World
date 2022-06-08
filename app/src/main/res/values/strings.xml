@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Assignment1</string>
+    <string name="authorClient">client</string>
+    <string name="authorServer">server</string>
+    <string name="message">this is a text message</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <string name="title_activity_maps2">MapsActivity2</string>
+    <string name="placeholderGroup">group1</string>
+</resources>
