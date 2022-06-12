@@ -2,6 +2,7 @@ package com.example.assignment1.View;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.Objects;
 
 public class Fragment_Chat extends Fragment {
+    public static final String TAG = "Fragment_Chat";
+
     private RecyclerView recyclerView;
     private LinearLayoutManager layoutManager;
     private MaterialButton sendButton;
@@ -44,10 +47,8 @@ public class Fragment_Chat extends Fragment {
 
         TextMessages messages = new ViewModelProvider(requireActivity()).get(TextMessages.class);
         messages.getMessages().observe(getViewLifecycleOwner(), message ->{
-            if(message.isEmpty()){
-                System.out.println("NO MESSAGES!!!!");
-            }
-            System.out.println(message.size());
+            if(message.isEmpty()){Log.d("Fragment_Chat", "onCreateView: no messages to load in adapter");}
+
             MessagesAdapter adapter = new MessagesAdapter(message);
             recyclerView.setAdapter(adapter);
             setupLayoutManager();
@@ -72,7 +73,8 @@ public class Fragment_Chat extends Fragment {
                 String message = Objects.requireNonNull(textInputEditText.getText()).toString();
                 String userID = Objects.requireNonNull(userData.getUserID().getValue());
                 listener.onSendMessageButtonClicked(userID, message);
-                listener.onSendImageButtonClicked(userID, message,  "12.979154", "55.613393");
+                //TODO solve hardcoding
+                //listener.onSendImageButtonClicked(userID, message,  "12.979154", "55.613393");
             }catch (Exception e){
                 e.printStackTrace();
             }

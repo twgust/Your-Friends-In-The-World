@@ -21,11 +21,24 @@ import java.net.Socket;
 public class ConnectThread implements Runnable {
         private static final String TAG = ConnectThread.class.getName();
         private Socket socket;
+        private static int DEFAULT_PORT = 7117;
+        private int IMAGE_PORT;
+        private final int port;
+
+        // Default constructor
+        public ConnectThread(){
+            this.port = DEFAULT_PORT;
+        }
+
+        // use this constructor if u want to upload an image and have a valid port provided by server
+        public ConnectThread(int imageUploadPort){
+            this.port = imageUploadPort;
+        }
 
         public void run() {
             try {
                 Log.d(TAG, "ConnectThread.run: connecting to server.. THREAD = <" + Thread.currentThread()+">");
-                int port = 7117;
+
                 String ipString = "192.168.0.30";
                 InetAddress address = InetAddress.getByName(ipString);
 

@@ -29,6 +29,18 @@ public class JSONMessageWriter {
             return "Exception";
         }
     }
+    public static String unregisterMessage(String user_id){
+        try{
+            StringWriter stringWriter = new StringWriter();
+            JsonWriter writer = new JsonWriter( stringWriter );
+            writer.beginObject().name("type").value("unregister")
+                    .name("id").value(user_id).endObject();
+            return stringWriter.toString();
+        }catch (IOException e){
+            e.printStackTrace();
+            return "Exception";
+        }
+    }
     public static String getGroups() {
         try{
             StringWriter stringWriter = new StringWriter();

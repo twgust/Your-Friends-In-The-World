@@ -32,6 +32,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 import android.widget.Toast;
 
+import java.util.Objects;
+
 /**
  * Utility class for access to runtime permissions.
  */
@@ -129,6 +131,69 @@ public abstract class MapsPermissionUtils {
                         public void onClick(DialogInterface dialog, int which) {
                             // After click on Ok, request the permission.
                             ActivityCompat.requestPermissions(getActivity(),
+                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                    requestCode);
+                            // Do not finish the Activity while requesting permission.
+                            finishActivity = false;
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .create();
+        }
+
+        @Override
+        public void onDismiss(DialogInterface dialog) {
+            super.onDismiss(dialog);
+            if (finishActivity) {
+                Toast.makeText(getActivity(),
+                        "R.string.permission_required_toast",
+                        Toast.LENGTH_SHORT)
+                        .show();
+                getActivity().finish();
+            }
+        }
+    }
+    public static class RationaleDialogReadWrite extends DialogFragment {
+
+        private static final String ARGUMENT_PERMISSION_REQUEST_CODE = "requestCode";
+
+        private static final String ARGUMENT_FINISH_ACTIVITY = "finish";
+
+        private boolean finishActivity = false;
+
+        /**
+         * Creates a new instance of a dialog displaying the rationale for the use of the location
+         * permission.
+         * <p>
+         * The permission is requested after clicking 'ok'.
+         *
+         * @param requestCode Id of the request that is used to request the permission. It is
+         * returned to the {@link androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback}.
+         * @param finishActivity Whether the calling Activity should be finished if the dialog is
+         * cancelled.
+         */
+        public static RationaleDialogReadWrite newInstance(int requestCode, boolean finishActivity) {
+            Bundle arguments = new Bundle();
+            arguments.putInt(ARGUMENT_PERMISSION_REQUEST_CODE, requestCode);
+            arguments.putBoolean(ARGUMENT_FINISH_ACTIVITY, finishActivity);
+            RationaleDialogReadWrite dialog = new RationaleDialogReadWrite();
+            dialog.setArguments(arguments);
+            return dialog;
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            Bundle arguments = getArguments();
+            final int requestCode = arguments.getInt(ARGUMENT_PERMISSION_REQUEST_CODE);
+            finishActivity = arguments.getBoolean(ARGUMENT_FINISH_ACTIVITY);
+
+            return new AlertDialog.Builder(getActivity())
+                    .setMessage("This app requires read and write permissions")
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // After click on Ok, request the permission.
+                            ActivityCompat.requestPermissions(requireActivity(),
                                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                                     requestCode);
                             // Do not finish the Activity while requesting permission.

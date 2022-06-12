@@ -1,15 +1,42 @@
 package com.example.assignment1.controller.network;
 
+import com.example.assignment1.R;
+import com.example.assignment1.View.Fragment_Maps;
+import com.example.assignment1.controller.Controller;
+import com.example.assignment1.controller.entity.MemberLocation;
 import com.example.assignment1.controller.json_utility.JSONMessageWriter;
 import com.example.assignment1.controller.json_utility.JSONParser;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApi;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.app.Service;
 
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.location.Location;
+import android.location.LocationManager;
+import android.media.Image;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.IBinder;
 
 import android.util.JsonReader;
@@ -17,15 +44,23 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.StringReader;
 
+import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -36,7 +71,7 @@ import java.net.Socket;
 
 
 @SuppressWarnings("ALL")
-public class NetworkService extends Service {
+public class NetworkService extends Service implements LocationListener {
     private static final String TAG = "NetworkService";
     private final IBinder binder = new LocalService();
 
@@ -60,9 +95,20 @@ public class NetworkService extends Service {
     private ArrayList<String> currentGroups;
     private ArrayList<String> currentLocations;
     public static String userID = "";
+    public static String group = "";
+    private LocationManager locationManager;
+    private FusedLocationProviderClient fusedLocationClient;
+    private Controller controller;
 
     // 30 sec .sleep duration (30k milliseconds)
-    private final static int pauseDuration = 30000;
+    private final static int pauseDuration = 20000;
+
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        System.out.println(location.toString());
+    }
+
 
     public class LocalService extends Binder {
         public NetworkService getService() {
@@ -91,9 +137,10 @@ public class NetworkService extends Service {
         responseHandler = new ResponseHandler(this);
         responseBuffer = new Buffer();
 
+
         // System.out.println("THREAD COUNT" + Runtime.getRuntime().availableProcessors());
         // setup a future object, waits until a connection to the server has been established
-        threadPool = Executors.newFixedThreadPool(3);
+        threadPool = Executors.newFixedThreadPool(4);
 
 
         Future<?> awaitConnection = threadPool.submit(connectThread);
@@ -121,9 +168,7 @@ public class NetworkService extends Service {
             dos = new DataOutputStream(os);
             is = socket.getInputStream();
             dis = new DataInputStream(is);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     private void setupContainers() {
@@ -140,56 +185,121 @@ public class NetworkService extends Service {
                 "...");
     }
 
+
     @SuppressWarnings("BusyWait")
-    private void updatePositions() {
-        String TAG = "Location Thread";
-        Log.d(TAG, "updatePositions: Entering update positions");
+    private void updatePositions()  {
         System.out.println(isRegistered);
         ExecutorService singleThread = Executors.newSingleThreadExecutor();
         singleThread.submit(() -> {
-            while (!isRegistered) {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            while (isRegistered) {
-                Log.d(TAG, "Refreshing groups = <" + Thread.currentThread() + ">");
+            try{
+                while (!isRegistered) { Thread.sleep(500); }
 
-                Send sendGroups = new Send(JSONMessageWriter.getGroups());
-                sendGroups.run();
-                try {
-                    Thread.sleep(2000);
-                    Log.d(TAG, "updating positions THREAD = <" + Thread.currentThread() + ">");
-                    String setLocation = JSONMessageWriter.setPosition(userID, "12.979154", "55.613393");
-                    Send send = new Send(setLocation);
-                    send.run();
-                    Thread.sleep(pauseDuration);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+                while (isRegistered) {
+                {
+                    fusedLocationClient.getLastLocation().addOnSuccessListener((Executor) Executors.newSingleThreadExecutor(), new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if (location != null) {
+
+                            String longtitude = String.valueOf(location.getLongitude());
+                            String latitude = String.valueOf(location.getLatitude());
+                            Send send = new Send(JSONMessageWriter.setPosition
+                                    (userID, longtitude, latitude));
+                            send.run();
+                        }
+                        else if (location == null) {
+                            Log.d(TAG, "onSuccess: LOCATION == NULL");
+                        }
+                    }});
+                    Thread.sleep(10000); } } }
+            catch (Exception e) { e.printStackTrace(); }
         });
     }
+
 
     public void registerRequest(String registerRequest) {
         Future<?> awaitRegistration;
         awaitRegistration = threadPool.submit(new Send(registerRequest));
         try {
             awaitRegistration.get();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (awaitRegistration.isDone()) {
-            updatePositions();
+            if (awaitRegistration.isDone()) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                        && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    fusedLocationClient = LocationServices.getFusedLocationProviderClient(NetworkService.this);
+                    updatePositions();
+                } else { System.out.println("NETWORK SERVICE, LOCATIONS Disabled"); }
+            }
+        }catch(Exception e){
+
         }
     }
 
     public void imageMessageRequest(String imageMessageRequest) {
-        threadPool.submit(new Send(imageMessageRequest));
+        Future <?> awaitImageResponse = threadPool.submit(new Send(imageMessageRequest));
+        try{
+            awaitImageResponse.get();
+            if(awaitImageResponse.isDone()){
+            }
+        }
+
+        catch (Exception e){
+
+        }
     }
 
+
+    public void uploadImage(String imageID, String portStr) {
+        int port = Integer.parseInt(portStr);
+        byte[] image = null;
+        ConnectThread imageConnection = new ConnectThread(port);
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+            Bitmap bm = BitmapFactory.decodeFile("/storage/emulated/0/Pictures/IMG_20220610_155101.jpg");
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
+            bm.recycle();
+            image = baos.toByteArray();
+            System.out.println("complete");
+        }
+        else{
+            System.out.println("no storage permissions");
+        }
+        Future<?> awaitConnection = threadPool.submit(imageConnection);
+        try {
+            awaitConnection.get();
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            OutputStream os = imageConnection.getSocket().getOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream
+                    (os);
+            oos.writeUTF(imageID);
+            oos.flush();
+            oos.writeObject(image);
+            oos.flush();
+            oos.close();
+
+        }
+        // oos.writeObject(uploadArray);
+
+        catch (IOException e) { e.printStackTrace(); }
+        // byte array containing the image data
+    }
+    public static Bitmap getBitmapFromLocalPath(String path, int sampleSize)
+    {
+        try
+        {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = sampleSize;
+            return BitmapFactory.decodeFile(path, options);
+        }
+        catch(Exception e)
+        {
+            //  Logger.e(e.toString());
+        }
+
+        return null;
+    }
 
     private void disconnectFromServer() {
         threadPool.submit(new NetworkDisconnect());
@@ -199,7 +309,6 @@ public class NetworkService extends Service {
      * Closes the socket and all streams, invoked when service is destroyed.
      */
     private class NetworkDisconnect implements Runnable {
-
         public void run() {
             try {
                 if (is != null)
@@ -259,6 +368,7 @@ public class NetworkService extends Service {
             String result;
             try {
                 Log.d(TAG, "Send.run(): sending request,  THREAD = <" + Thread.currentThread() + ">");
+                Log.d(TAG, "run: " + serverRequest);
                 dos.writeUTF(serverRequest);
                 dos.flush();
             } catch (Exception e) {
@@ -306,22 +416,34 @@ public class NetworkService extends Service {
                     String responseType = serverResponse.getString("type");
                     switch (responseType) {
                         case "register":
-                            String[] groupAndID = JSONParser.parseRegistrationResponse(responseBody);
-                            userID = groupAndID[1];
+                            String[] registerResponse = JSONParser.parseRegistrationResponse(responseBody);
+                            userID = registerResponse[1];
+                            group = registerResponse[0];
                             isRegistered = true;
-                            // send broadcast (Group, ID) to activity
+
                             Intent registerIntent = new Intent("REGISTER");
-                            registerIntent.putExtra("group", groupAndID[0]);
-                            registerIntent.putExtra("id", groupAndID[1]);
+                            registerIntent.putExtra("group", registerResponse[0]);
+                            registerIntent.putExtra("id", registerResponse[1]);
                             LocalBroadcastManager.getInstance(serviceContext)
                                     .sendBroadcast(registerIntent);
+                            threadPool.submit(new Send(JSONMessageWriter.getMembersForGroup(group)));
                             break;
                         case "unregister":
+                            String unregisterResponse = JSONParser.parserDeregistrationResponse(responseBody);
+                            Intent unregisterIntent = new Intent("UNREGISTER");
+                            unregisterIntent.putExtra("unregister", unregisterResponse);
+                            LocalBroadcastManager.getInstance(serviceContext)
+                                    .sendBroadcast(unregisterIntent);
                             isRegistered = false;
                             break;
 
                         case "members":
-                            JSONParser.parseMembersInGroup(responseBody);
+                            ArrayList<String> membersInGroupResponse = (ArrayList<String>)
+                                    JSONParser.parseMembersInGroup(responseBody);
+                            Intent membersIntent = new Intent("MEMBERS");
+                            membersIntent.putStringArrayListExtra("name", membersInGroupResponse);
+                            LocalBroadcastManager.getInstance(serviceContext)
+                                    .sendBroadcast(membersIntent);
                             break;
 
                         case "groups":
@@ -330,28 +452,32 @@ public class NetworkService extends Service {
                             groupsIntent.putExtra("groupsArrayList", currentGroups);
                             LocalBroadcastManager.getInstance(serviceContext)
                                     .sendBroadcast(groupsIntent);
+
                             break;
 
                         case "locations":
                             // member name, long, lat
-                            currentLocations = (ArrayList<String>)
-                                    JSONParser.parseLocationsResponse(currentLocations, responseBody);
+                            ArrayList<String> locationsResponse = new ArrayList<>();
+                            locationsResponse = (ArrayList<String>) JSONParser.parseLocationsResponse(responseBody);
                             Intent locationsIntent = new Intent("LOCATIONS");
+                            locationsIntent.putStringArrayListExtra("locations",locationsResponse);
+                            LocalBroadcastManager.getInstance(serviceContext)
+                                    .sendBroadcast(locationsIntent);
                             break;
 
                         case "location":
-                            HashMap<String, String> response =
-                                    JSONParser.parseLocationsResponse(responseBody);
+                            HashMap<String, String> locationResponse =
+                                    JSONParser.parseLocationResponse(responseBody);
                             Intent locationIntent = new Intent("LOCATION");
-                            locationIntent.putExtra("longitude", response.get("longitude"));
-                            locationIntent.putExtra("latitude", response.get("latitude"));
+                            locationIntent.putExtra("longitude", locationResponse.get("longitude"));
+                            locationIntent.putExtra("latitude", locationResponse.get("latitude"));
                             LocalBroadcastManager.getInstance(serviceContext)
                                     .sendBroadcast(locationIntent);
                             break;
 
                         case "textchat":
                             System.out.println(responseBody);
-                            HashMap<String, String> text =
+                            HashMap<String, String> textChatResponse =
                                     JSONParser.parseTextMessageResponse(responseBody);
                                     /*
                                       only send inbound messages to the broadcast receiver
@@ -390,27 +516,48 @@ public class NetworkService extends Service {
                                        see JSONParser.parseTextMessageResponse(JsonReader Reader)
 
                                      */
-                            if (Objects.equals(text.get("type"), "inbound")) {
+                            if (Objects.equals(textChatResponse.get("type"), "inbound")) {
                                 Intent textMessageIntent = new Intent("TEXTMESSAGE");
-                                textMessageIntent.putExtra("type", text.get("type"));
-                                textMessageIntent.putExtra("group", text.get("group"));
-                                textMessageIntent.putExtra("member", text.get("member"));
-                                textMessageIntent.putExtra("text", text.get("text"));
+                                textMessageIntent.putExtra("type", textChatResponse.get("type"));
+                                textMessageIntent.putExtra("group", textChatResponse.get("group"));
+                                textMessageIntent.putExtra("member", textChatResponse.get("member"));
+                                textMessageIntent.putExtra("text", textChatResponse.get("text"));
                                 LocalBroadcastManager.getInstance(serviceContext)
                                         .sendBroadcast(textMessageIntent);
                             }
                             break;
 
                         case "upload":
-                            System.out.println("<image upload>");
-                            HashMap<String, String> responseData =
-                                    JSONParser.parseUploadImageResponse(responseBody);
 
+                            System.out.println("<image upload, get your secrets>");
+                            HashMap<String, String> uploadResponse =
+                                    JSONParser.parseUploadImageResponse(responseBody);
                             Intent uploadImageIntent = new Intent("IMAGEUPLOAD");
-                            uploadImageIntent.putExtra("port", responseData.get("port"));
-                            uploadImageIntent.putExtra("imageID", responseData.get("imageID"));
+                            uploadImageIntent.putExtra("port", uploadResponse.get("port"));
+                            uploadImageIntent.putExtra("imageID", uploadResponse.get("imageID"));
                             LocalBroadcastManager.getInstance(serviceContext)
                                     .sendBroadcast(uploadImageIntent);
+                            uploadImage(uploadResponse.get("imageID"),uploadResponse.get("port"));
+
+
+
+                            break;
+                        case "imagechat":
+
+                            System.out.println("<image> chat>");
+                            HashMap<String, String> imagechatResponse =
+                                    JSONParser.parseImageMessageResponse(responseBody);
+
+                            Intent imagechatIntent = new Intent("IMAGEMESSAGE");
+                            imagechatIntent.putExtra("group", imagechatResponse.get("group")) ;
+                            imagechatIntent.putExtra("member", imagechatResponse.get("member"));
+                            imagechatIntent.putExtra("text",imagechatResponse.get("text"));
+                            imagechatIntent.putExtra("longitude", imagechatResponse.get("longitude"));
+                            imagechatIntent.putExtra("latitude", imagechatResponse.get("latitude"));
+                            imagechatIntent.putExtra("imageID", imagechatResponse.get("imageID"));
+                            imagechatIntent.putExtra("port", imagechatResponse.get("port"));
+                            LocalBroadcastManager.getInstance(serviceContext)
+                                    .sendBroadcast(imagechatIntent);
                             break;
 
                         default:

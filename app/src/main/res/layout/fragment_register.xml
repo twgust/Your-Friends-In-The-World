@@ -88,20 +88,6 @@
                 >
 
                 <com.google.android.material.button.MaterialButton
-                    style="@style/Widget.Material3.Button.IconButton"
-                    android:id="@+id/refreshButtonSignIn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:icon="@drawable/xml_icon_baseline_refresh_24"
-                    android:layout_gravity="start"
-
-
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent">
-
-                </com.google.android.material.button.MaterialButton>
-                <com.google.android.material.button.MaterialButton
                     style="@style/Widget.Material3.Button.TextButton"
                     android:id="@+id/submitButton"
                     android:layout_width="wrap_content"

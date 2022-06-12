@@ -3,6 +3,8 @@ package com.example.assignment1.controller.json_utility;
 import android.util.JsonReader;
 import android.util.Log;
 
+import com.example.assignment1.controller.entity.MemberLocation;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,16 +43,26 @@ public class JSONParser {
         return arr;
     }
 
-    public static String parserDeregistrationResponse(JsonReader reader) {
-        return "hello world";
+    public static String parserDeregistrationResponse(String JSONMessage) {
+
+        try{
+            JSONObject response = new JSONObject(JSONMessage);
+            String typeStr = response.getString("type");
+            String responseStr = response.getString("id");
+            return typeStr + "," + responseStr;
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
     public static List<String> parseMembersInGroup(String JSONMessage) {
         try {
             List<String> groupMembers = new ArrayList<>();
-            JSONObject response = new JSONObject("string");
-            response.getString("group");
+            JSONObject response = new JSONObject(JSONMessage);
+            String name = response.getString("group");
+            groupMembers.add(name);
             JSONArray members = response.getJSONArray("members");
             for (int i = 0; i <members.length() ; i++) {
                 groupMembers.add(members.getJSONObject(i).getString("member"));
@@ -83,41 +95,30 @@ public class JSONParser {
     /**
      * Reads and parses the locations response from the server
      *
-     * @param locationObjects the container for the locations Object
      * @return returns a list of location Objects formatted as Strings
      */
-    public static List<String> parseLocationsResponse(List<String> locationObjects, String JSONMessage) {
-        locationObjects.clear();
-        StringBuilder locationBuilder = new StringBuilder();
-        try{
+    public static ArrayList<String> parseLocationsResponse(String JSONMessage) {
 
+        try {
+            ArrayList<String> list = new ArrayList<>();
             JSONObject responseObject = new JSONObject(JSONMessage);
             String group = responseObject.getString("group");
             JSONArray locations = responseObject.getJSONArray("location");
-            System.out.println("LOCATIONS IN GROUP: " + group);
-            for (int i = 0; i < locations.length() ; i++) {
-                locationBuilder = new StringBuilder();
+
+            for (int i = 0; i < locations.length(); i++) {
                 String memberName = locations.getJSONObject(i).getString("member");
                 String longitude = locations.getJSONObject(i).getString("longitude");
                 String latitude = locations.getJSONObject(i).getString("latitude");
-                locationBuilder.append("M:").append(memberName)
-                        .append("LNG:").append(longitude)
-                        .append("Lat:").append(latitude);
-                System.out.println(locationBuilder.toString());
-                locationObjects.add(locationBuilder.toString());
-
+                list.add(group + ","+ memberName + "," + longitude + "," + latitude);
             }
-            System.out.println("END OF parseLocationsResponse");
-            return locationObjects;
-
+            return list;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-        // finally the list is returned
     }
 
-    public static HashMap<String, String> parseLocationsResponse(String JSONMessage) {
+    public static HashMap<String, String> parseLocationResponse(String JSONMessage) {
         HashMap<String, String> map = new HashMap<>();
         try {
             JSONObject responseObject = new JSONObject(JSONMessage);
@@ -134,22 +135,7 @@ public class JSONParser {
         }
     }
 
-    public static HashMap<String, String> parseUploadImageResponse(String JSONMessage) {
-        System.out.println("Parsing UploadImageResponse from server...");
-        HashMap<String, String> map = new HashMap<>();
-        try {
-            JSONObject response = new JSONObject(JSONMessage);
-            String imageID = response.getString("imageid");
-            String port = response.getString("port");
-            map.put("port", port);
-            map.put("imageID", imageID);
-            return map;
-        } catch (JSONException e) {
-            Log.d(TAG, "parseUploadImageResponse: bad response from server");
-            e.printStackTrace();
-            return null;
-        }
-    }
+
 
     public static HashMap<String, String> parseTextMessageResponse(String JSONMessage) {
         try {
@@ -186,8 +172,39 @@ public class JSONParser {
         }
     }
 
-    private String parseImageMessageResponse(JsonReader reader) {
-        return "hello world";
+    public static HashMap<String, String> parseUploadImageResponse(String JSONMessage) {
+        System.out.println("Parsing UploadImageResponse from server...");
+        HashMap<String, String> map = new HashMap<>();
+        try {
+            JSONObject response = new JSONObject(JSONMessage);
+            String imageID = response.getString("imageid");
+            String port = response.getString("port");
+            map.put("port", port);
+            map.put("imageID", imageID);
+            return map;
+        } catch (JSONException e) {
+            Log.d(TAG, "parseUploadImageResponse: bad response from server");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static HashMap<String, String> parseImageMessageResponse(String JSONMessage) {
+        HashMap<String, String> map = new HashMap<>();
+        try {
+            JSONObject imageResponse = new JSONObject(JSONMessage);
+            String group = imageResponse.getString("group");
+            String member = imageResponse.getString("member");
+            String text = imageResponse.getString("text");
+            String longitude = imageResponse.getString("longitude");
+            String latitude = imageResponse.getString("latitude");
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
+
     }
 
 }

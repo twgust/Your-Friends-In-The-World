@@ -5,23 +5,31 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
+
+import androidx.lifecycle.MutableLiveData;
 
 import com.example.assignment1.View.MainActivity;
 import com.example.assignment1.controller.network.NetworkService;
 import com.example.assignment1.controller.json_utility.JSONMessageWriter;
 
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Controller {
     private static final String TAG = "Controller";
     private NetworkService networkService;
     private final MainActivity mainActivity;
     private boolean isBound = false;
-
 
     /**
      * Starts Service NetworkService, invoking NetworkService.onStartCommand()
@@ -52,9 +60,6 @@ public class Controller {
         }
     };
 
-
-
-
     public void onDestroy() {
         if (isBound) {
             networkService.onDestroy();
@@ -66,31 +71,26 @@ public class Controller {
      * Tells NetworkService to register to a group
      * @param groupName The name of the group which the user wishes to register to
      * @param username The name of the user which is registering to a group
-     * @throws IOException Exception
      */
-
-    public void registerToGroup(String groupName, String username) throws IOException {
+    public void registerToGroup(String groupName, String username) {
         Log.d(TAG, "onClickSubmit: RegisterToGroup(groupName, username)");
         networkService.registerRequest(JSONMessageWriter.registerToGroup(groupName, username));
-
     }
 
     /**
      * Tells NetworkService to request the members for groupName
      * @param groupName the group of which the members are in
-     * @throws IOException Exception
      */
-
-    public void getMembersInGroup(String groupName) throws IOException{
+    public void getMembersInGroup(String groupName)  {
         Log.d(TAG, "onClickUserIcon: getMembersForGroup(groupName)");
-        networkService.serverRequest(JSONMessageWriter.getMembersForGroup(groupName));
+        try {    networkService.serverRequest(JSONMessageWriter.getMembersForGroup(groupName)); }
+        catch (Exception e){ e.printStackTrace(); }
     }
 
     /**
      * Tells NetworkService to request the registered groups from the server
-     * @throws IOException Exception
      */
-    public void getRegisteredGroups() throws IOException{
+    public void getRegisteredGroups() {
         Log.d(TAG, "onClickGroupIcon: getRegisteredGroups()");
         networkService.serverRequest(JSONMessageWriter.getGroups());
 
@@ -113,5 +113,9 @@ public class Controller {
     }
     public void uploadImage(String port, String imageID){
 
+    }
+
+    public void unregister(MutableLiveData<String> userID) {
+        networkService.serverRequest(JSONMessageWriter.unregisterMessage(userID.getValue()));
     }
 }

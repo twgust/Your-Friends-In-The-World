@@ -9,7 +9,7 @@
         android:id="@+id/page_2_groups"
         android:enabled="true"
         android:icon="@drawable/xml_icon_groups_24"
-        android:title="groups"/>
+        android:title="group"/>
     <item
         android:id="@+id/page_3_chat"
         android:enabled="true"

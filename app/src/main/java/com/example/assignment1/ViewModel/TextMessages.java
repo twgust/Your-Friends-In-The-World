@@ -43,19 +43,17 @@ public class TextMessages extends ViewModel {
         if(textMessages.isEmpty() || textMessages == null){
             textMessages = new ArrayList<>();
             textMessages.add(message);
-            System.out.println(textMessages.get(0).getType() + " TYPE!!!!!");
             mutableLiveDataMessages.setValue(textMessages);
 
         }
         else{
             textMessages.add(message);
-            System.out.println("<!!!!!!!");
+
             for (int i = 0; i < textMessages.size(); i++) {
                 System.out.println(textMessages.get(i) + "<" + textMessages.get(i).getText() + ">");
             }
-            System.out.println("!!!!!!!>");
+
             List<TextMessage> as = mutableLiveDataMessages.getValue();
-            System.out.println(as.size() + "SIZE!!!!!!!!");
             mutableLiveDataMessages.setValue(textMessages);
 
             Log.d(TAG, "addMessage: attempting to set textMessages...");

@@ -1,17 +1,13 @@
 package com.example.assignment1.View;
 
-import static android.content.ContentValues.TAG;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -21,9 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.assignment1.R;
 import com.example.assignment1.View.Adapters.GroupAdapter;
-import com.example.assignment1.ViewModel.Users;
+import com.example.assignment1.ViewModel.MemberData;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -31,14 +26,19 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class Fragment_LogIn extends Fragment
-        implements GroupAdapter.ViewHolder.OnGroupSelectedListener{
+        implements GroupAdapter.ViewHolder.OnGroupSelectedListener, GroupAdapter.ViewHolder.onJoinGroupClicked, GroupAdapter.ViewHolder.onRefreshGroupClicked{
+    public static final String TAG = "Fragment_LogIn";
 
     private MaterialButton button;
-    private TextInputEditText textfieldUserName;
-    private TextInputEditText textfieldgroupName;
+    private MaterialButton refreshButton;
+    private TextInputEditText textFieldUserName;
+    private TextInputEditText textFieldgroupName;
 
     private LoginListener loginListener;
-    private GroupSelectedListener groupListener;
+    private GroupSelectedListener groupPosListener;
+    private GroupNameListener groupNameListener;
+    private Fragment_Groups.GROUPS_REFRESH groups_refresh;
+    private Fragment_Groups.GROUP_REFRESH group_refresh;
 
     //TODO DEPRECATED
     private MaterialToolbar toolbar;
@@ -51,33 +51,51 @@ public class Fragment_LogIn extends Fragment
         View view = inflater.inflate(R.layout.fragment_register, container, false);
 
         button =  view.findViewById(R.id.submitButton);
-        textfieldgroupName = view.findViewById(R.id.groupEditText);
-        textfieldgroupName.setText(R.string.placeholderGroup);
-        textfieldUserName = view.findViewById(R.id.userEditText);
+        refreshButton = view.findViewById(R.id.refreshButton);
+
+        textFieldgroupName = view.findViewById(R.id.groupEditText);
+        textFieldUserName = view.findViewById(R.id.userEditText);
         recyclerView = view.findViewById(R.id.recyclerViewGroups);
 
-        Users users = new ViewModelProvider(requireActivity()).get(Users.class);
-        users.getGroups().observe(getViewLifecycleOwner(), groups -> {
+        MemberData memberData = new ViewModelProvider(requireActivity()).get(MemberData.class);
+        memberData.getGroups().observe(getViewLifecycleOwner(), groups -> {
             if (groups.isEmpty()){
-                System.out.println("empty");
+                Log.d("Fragment_LogIn", "onCreateView: no groups exist yet");
             }
-            GroupAdapter adapter = new GroupAdapter(groups, this);
+            GroupAdapter adapter = new GroupAdapter(groups, this, this, this);
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new GridLayoutManager(getContext(),2));
         });
 
         addButtonListener();
-        setupToolbar();
         return view;
     }
 
+    @Override
+    public void refreshGroupClicked(String name) {
+        group_refresh.GROUP_byName(name);
+    }
+
+
+
+    public interface GroupNameListener {
+        void LOGIN_onGroupClicked(String name);
+    }
+    @Override
+    public void joinGroupClicked(String groupName) {
+        System.out.println(groupName);
+        textFieldgroupName.setText(groupName);
+        groupNameListener.LOGIN_onGroupClicked(groupName);
+        Toast.makeText(requireActivity(), getResources().getString(R.string.placeholderGroup), Toast.LENGTH_LONG).show();
+    }
     // ---->
     public interface GroupSelectedListener {
-        void selectedGroupListener(int pos);
+        void LOGIN_onGroupClicked(int pos);
     }
     @Override
     public void onGroupClicked(int pos) {
-        groupListener.selectedGroupListener(pos);
+        System.out.println("WTF IS A " + pos);
+        groupPosListener.LOGIN_onGroupClicked(pos);
         Log.d(TAG, "onGroupClicked: ");
     }
     // <----
@@ -88,15 +106,18 @@ public class Fragment_LogIn extends Fragment
 
     private void addButtonListener(){
         button.setOnClickListener(view1 -> {
-            String groupname = Objects.requireNonNull(textfieldgroupName.getText()).toString();
-            String username = Objects.requireNonNull(textfieldUserName.getText()).toString();
+            String groupname = Objects.requireNonNull(textFieldgroupName.getText()).toString();
+            String username = Objects.requireNonNull(textFieldUserName.getText()).toString();
             if(!groupname.isEmpty() && !username.isEmpty()){
                 try {
                     loginListener.onLoginButtonClicked(groupname,username);
-                    textfieldgroupName.setText("");
-                    textfieldUserName.setText(""); }
+                    textFieldgroupName.setText("");
+                    textFieldUserName.setText(""); }
                 catch (IOException e) { e.printStackTrace(); }
             }
+        });
+        refreshButton.setOnClickListener(view ->{
+            groups_refresh.GROUPS_refresh();
         });
     }
 
@@ -104,24 +125,15 @@ public class Fragment_LogIn extends Fragment
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
+            groupNameListener = (GroupNameListener) getActivity();
             loginListener = (LoginListener) getActivity();
-            groupListener = (GroupSelectedListener) getActivity();
+            groupPosListener = (GroupSelectedListener) getActivity();
+            groups_refresh = (Fragment_Groups.GROUPS_REFRESH)  getActivity();
+            group_refresh = (Fragment_Groups.GROUP_REFRESH) getActivity();
         } catch (ClassCastException e) {
             throw new ClassCastException(requireActivity() +
                     " must implement GroupSelectedListener");
         }
-    }
-
-
-    // TODO DEPRECATED
-    private void setupToolbar(){
-        /*
-        toolbar = getActivity().findViewById(R.id.topAppBar);
-        toolbar.setTitle("Your Friends in the world");
-        toolbar.setSubtitle("assignment 2");
-        toolbar.setTitleCentered(true);
-        toolbar.setSubtitleCentered(true);
-        */
     }
 }
 

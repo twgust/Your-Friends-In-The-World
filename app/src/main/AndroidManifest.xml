@@ -9,6 +9,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
 
 
     <application
@@ -25,17 +28,23 @@
             />
         <meta-data
             android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"
+            android:value=  "@integer/google_play_services_version"
             />
 
         <receiver android:name=".controller.network.NetworkBroadcastReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.REGISTER"/>
+                <action android:name="android.intent.action.UNREGISTER"/>
                 <action android:name="android.intent.action.MEMBERS"/>
                 <action android:name="android.intent.action.GROUPS"/>
                 <action android:name="android.intent.action.TEXTMESSAGE"/>
+                <action android:name="android.intent.action.IMAGEMESSAGE"/>
                 <action android:name="android.intent.action.IMAGEUPLOAD"/>
                 <action android:name="android.intent.action.LOCATION"/>
+                <action android:name="android.intent.action.LOCATIONS"/>
+
+                <action android:name="android.intent.action.SETLOCATION"/>
+
             </intent-filter>
         </receiver>
         <activity

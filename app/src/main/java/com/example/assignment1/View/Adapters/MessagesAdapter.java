@@ -51,10 +51,10 @@ public class MessagesAdapter extends RecyclerView.Adapter{
     }
 
     public MessagesAdapter(List<TextMessage> messagesList){
-        System.out.println(messagesList.size() + " !input data size ");
+
 
         localMessagesList = messagesList;
-        System.out.println(localMessagesList.size() + " !local dataset size");
+
     }
 
 

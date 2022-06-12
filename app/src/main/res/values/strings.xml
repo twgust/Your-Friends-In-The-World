@@ -5,5 +5,5 @@
     <string name="message">this is a text message</string>
     <string name="title_activity_maps">MapsActivity</string>
     <string name="title_activity_maps2">MapsActivity2</string>
-    <string name="placeholderGroup">group1</string>
+    <string name="placeholderGroup">Group Selected! enter username and sign up</string>
 </resources>

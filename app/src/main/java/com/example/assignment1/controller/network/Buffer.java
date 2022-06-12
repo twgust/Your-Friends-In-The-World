@@ -3,12 +3,24 @@ package com.example.assignment1.controller.network;
 import android.util.Log;
 
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Buffer {
     private LinkedList<String> responseBuffer;
+    private Boolean registration  ;
 
     public Buffer(){
         responseBuffer = new LinkedList<>();
+    }
+    protected synchronized void setRegistered(Boolean registered){
+        this.registration = registered;
+        notifyAll();
+    }
+    protected synchronized Boolean getRegistered() throws InterruptedException {
+        while(!registration){
+            wait();
+        }
+        return registration;
     }
     protected synchronized void put(String response){
         responseBuffer.addLast(response);

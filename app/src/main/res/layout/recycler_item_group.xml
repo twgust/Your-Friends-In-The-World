@@ -3,7 +3,7 @@
 
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/Widget.Material3.CardView.Filled"
+    style="@style/Widget.Material3.CardView.Elevated"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardUseCompatPadding="true"
@@ -11,65 +11,62 @@
 
     >
 
-    <LinearLayout
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
+        android:layout_height="match_parent">
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/groupTextView_GroupItem"
+            style="@style/TextAppearance.Material3.TitleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="8dp"
+            android:text="groupname"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            >
 
-        android:weightSum="4">
+        </com.google.android.material.textview.MaterialTextView>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/refreshButton_GroupItem"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/xml_icon_baseline_refresh_24"
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/groupTextView_GroupItem"
+            >
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/groupTextView"
+        </com.google.android.material.button.MaterialButton>
 
-                style="@style/TextAppearance.Material3.TitleMedium"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/signUp_GroupItem"
+            style="@style/Widget.Material3.Button.TextButton.Dialog"
+            android:text="join"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:iconGravity="end"
 
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp"
-                android:text="groupname">
+            app:layout_constraintTop_toBottomOf="@id/groupTextView_GroupItem"
+            app:layout_constraintStart_toStartOf="parent">
 
-            </com.google.android.material.textview.MaterialTextView>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                >
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/onlineInGroup"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="15 online"
-
-                    app:drawableStartCompat="@drawable/xml_icon_person_24"
-                    app:drawableTint="@color/md_theme_light_primary">
-
-
-                </com.google.android.material.textview.MaterialTextView>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/joinButton"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-
-                    android:text="join">
-
-                </com.google.android.material.button.MaterialButton>
-            </LinearLayout>
+        </com.google.android.material.button.MaterialButton>
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/currentMembers_GroupItem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:drawableStartCompat="@drawable/xml_icon_person_24"
+            android:text="online"
+            app:layout_constraintStart_toEndOf="@id/signUp_GroupItem"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/groupTextView_GroupItem"
+            app:layout_constraintEnd_toEndOf="@id/refreshButton_GroupItem"
+            >
 
 
-        </LinearLayout>
-
-    </LinearLayout>
-
-
+        </com.google.android.material.textview.MaterialTextView>
+      </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
