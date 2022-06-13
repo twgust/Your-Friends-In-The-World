@@ -2,8 +2,7 @@
 # Your Friends In The World - Assignment 1
 
  This product has been developed for the Android development course and is not intended to be published or used commercially.
-
-## Server Responses
+ 
 ## Installation
 * Clone repository
 https://github.com/twgust/Your-Friends-In-The-World
