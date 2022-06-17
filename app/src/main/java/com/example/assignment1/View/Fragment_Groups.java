@@ -19,64 +19,100 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.assignment1.R;
 import com.example.assignment1.View.Adapters.GroupAdapter;
 import com.example.assignment1.ViewModel.MemberData;
+import com.example.assignment1.ViewModel.UserData;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
-public class Fragment_Groups extends Fragment
-        implements GroupAdapter.ViewHolder.OnGroupSelectedListener,
-        GroupAdapter.ViewHolder.onJoinGroupClicked,
-        GroupAdapter.ViewHolder.onRefreshGroupClicked
-{
+public class Fragment_Groups extends Fragment implements
+        GroupAdapter.ViewHolder.joinGroupListener,
+        GroupAdapter.ViewHolder.leaveGroupListener,
+        GroupAdapter.ViewHolder.refreshGroupListener,
+        GroupAdapter.ViewHolder.groupViewListener
+        {
 
     public static final String TAG = "Fragment_Groups";
 
-    public interface GROUPS_ON_JOIN_CLICK {
-        void GROUPS_OnJoinClicked(String name);
+
+     public interface GROUPS_JOIN {
+        void GROUPS_onJoinClicked(String name);
     }
+    public interface GROUPS_LEAVE{
+         void GROUPS_onLeaveClicked(String name);
+     }
+
     public interface GROUPS_REFRESH{
-        void GROUPS_refresh();
+        void GROUPS_onRefreshClicked();
     }
     public interface GROUP_REFRESH{
-        void GROUP_byName(String name);
+        void GROUPS_onGroupViewCLicked(String name);
     }
 
-    private MaterialTextView textViewGroups;
-    private GROUPS_ON_JOIN_CLICK joinlistener;
-    private GROUPS_REFRESH refreshGroups;
-    private GROUP_REFRESH refreshGroupByName;
-    private MaterialButton refreshButton;
 
+
+    private MaterialButton refreshButton;
+    private MaterialTextView textViewGroups;
     private MemberData memberData;
+    private UserData userData;
+
+    private GROUPS_JOIN joinListener;
+    private GROUPS_LEAVE leaveListener;
+    private GROUPS_REFRESH refreshGroupsListener;
+    private GROUP_REFRESH refreshGroupByNameListener;
+
+
+
     @SuppressLint("SetTextI18n")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_groups, container, false);
-        RecyclerView recyclerView = view.findViewById(R.id.groupRecycler);
         textViewGroups = view.findViewById(R.id.onlineInGroup_FRAGMENT_GROUPS);
         refreshButton = view.findViewById(R.id.refresh);
+        initializeMemberViewModel(view);
 
+        initializeButtonListeners();
+        return view;
+    }
+    private void initializeUserViewModel(View view){
+        userData = new ViewModelProvider(requireActivity()).get(UserData.class);
+        userData.getUserIDList().observe(requireActivity(), ids->{
+            for (int i = 0; i < ids.size() ; i++) {
+
+            }
+        });
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void initializeMemberViewModel(View view){
+        RecyclerView recyclerView = view.findViewById(R.id.groupRecycler);
         memberData = new ViewModelProvider(requireActivity()).get(MemberData.class);
         memberData.getGroups().observe(requireActivity(), groups -> {
             if (groups.isEmpty()){
                 Log.d("FragmentChat", "onCreateView: no groups exist yet");
             }else{
                 Log.d(TAG, "Fragment: observing Members ViewModel");
-                GroupAdapter adapter = new GroupAdapter(groups,this,this, this);
+
+                GroupAdapter adapter = new GroupAdapter(groups,
+                        this,this,
+                        this, this);
+
                 recyclerView.setAdapter(adapter);
                 recyclerView.setLayoutManager(new GridLayoutManager(getContext(),2));
-                textViewGroups.setText(groups.size() + " groups online");
+                if(groups.size() == 1){
+                    textViewGroups.setText(groups.size() + " group registered");
+                }
+                else{
+                    textViewGroups.setText(groups.size() + " groups registered");
+                }
             }
         });
-        addButtonListener();
-        return view;
     }
 
 
     @SuppressLint("SetTextI18n")
-    private void addButtonListener(){
+    private void initializeButtonListeners(){
         refreshButton.setOnClickListener((view)->{
-            refreshGroups.GROUPS_refresh();
+            refreshGroupsListener.GROUPS_onRefreshClicked();
         });
     }
 
@@ -84,9 +120,10 @@ public class Fragment_Groups extends Fragment
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
-            joinlistener = (GROUPS_ON_JOIN_CLICK) requireActivity();
-            refreshGroups = (GROUPS_REFRESH) requireActivity();
-            refreshGroupByName = (GROUP_REFRESH) requireActivity();
+            joinListener = (GROUPS_JOIN) requireActivity();
+            leaveListener = (GROUPS_LEAVE) requireActivity();
+            refreshGroupsListener = (GROUPS_REFRESH) requireActivity();
+            refreshGroupByNameListener = (GROUP_REFRESH) requireActivity();
 
         } catch (ClassCastException e) {
             throw new ClassCastException(requireActivity() + " must implement GroupSelectedListener");
@@ -95,9 +132,21 @@ public class Fragment_Groups extends Fragment
 
     @Override
     public void joinGroupClicked(String groupName) {
+        Log.d(TAG, "joinGroupClicked: !");
+        joinListener.GROUPS_onJoinClicked(groupName);
+    }
 
-        System.out.println(groupName);
-        joinlistener.GROUPS_OnJoinClicked(groupName);
+    @Override
+    public void leaveGroupClicked(String groupName) {
+        Log.d(TAG, "leaveGroupClicked: !");
+        leaveListener.GROUPS_onLeaveClicked(groupName);
+    }
+
+    @Override
+    public void refreshGroupClicked(String name) {
+        Log.d(TAG, "refreshGroupClicked: !");
+        Toast.makeText(requireActivity(), name + " refreshed", Toast.LENGTH_SHORT).show();
+        refreshGroupByNameListener.GROUPS_onGroupViewCLicked(name);
     }
 
     @Override
@@ -105,9 +154,5 @@ public class Fragment_Groups extends Fragment
         // if index of the selected element in adapter is needed
     }
 
-    @Override
-    public void refreshGroupClicked(String name) {
-        Toast.makeText(requireActivity(), name + " refreshed", Toast.LENGTH_SHORT).show();
-        refreshGroupByName.GROUP_byName(name);
-    }
+
 }

@@ -16,9 +16,11 @@ import java.util.List;
 
 
 public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
-        private final ViewHolder.OnGroupSelectedListener groupSelectedListener;
-        private final ViewHolder.onJoinGroupClicked joinGroupListener;
-        private ViewHolder.onRefreshGroupClicked refreshGroupListener;
+        private final ViewHolder.joinGroupListener joinGroupListener;
+        private final ViewHolder.leaveGroupListener leaveGroupListener;
+        private final ViewHolder.refreshGroupListener refreshGroupListener;
+        private final ViewHolder.groupViewListener groupSelectedListener;
+
         private List<String> localDataSet;
 
 
@@ -34,28 +36,38 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
             private final MaterialTextView groupNameView;
             //private final MaterialTextView memberCountView;
             private final MaterialButton joinButton;
+            private final MaterialButton leaveButton;
             private final MaterialButton refreshButton;
-            OnGroupSelectedListener onGroupSelectedListener;
-            onJoinGroupClicked joinButtonListener;
-            onRefreshGroupClicked refreshButtonListener;
-            public ViewHolder(View view, OnGroupSelectedListener onGroupSelectedListener1, onJoinGroupClicked joinButtonListener, onRefreshGroupClicked refreshButtonListener) {
+
+            ViewHolder.leaveGroupListener leaveButtonListener;
+            ViewHolder.joinGroupListener joinButtonListener;
+            ViewHolder.refreshGroupListener refreshButtonListener;
+            groupViewListener groupViewListener;
+
+            public ViewHolder(View view, groupViewListener groupViewListener1, ViewHolder.joinGroupListener joinButtonListener, ViewHolder.refreshGroupListener refreshButtonListener, ViewHolder.leaveGroupListener onLeaveButtonListener) {
                 super(view);
+
                 // Define click listener for the ViewHolder's View
-                this.onGroupSelectedListener = onGroupSelectedListener1;
                 this.joinButtonListener = joinButtonListener;
+                this.leaveButtonListener = onLeaveButtonListener;
                 this.refreshButtonListener = refreshButtonListener;
-                joinButton = (MaterialButton) view.findViewById(R.id.signUp_GroupItem);
+                this.groupViewListener = groupViewListener1;
+
+                joinButton = (MaterialButton) view.findViewById(R.id.joinButton_GroupItem);
                 groupNameView = (MaterialTextView) view.findViewById(R.id.groupTextView_GroupItem);
                 refreshButton = (MaterialButton) view.findViewById(R.id.refreshButton_GroupItem);
+                leaveButton = (MaterialButton) view.findViewById(R.id.leaveButton_GroupItem);
+
                 // memberCountView = (MaterialTextView) view.findViewById(R.id.onlineInGroup);
                 //textView = (TextView) view.findViewById(R.id.textView);
+
                 view.setOnClickListener(this);
-                onClick();
+                initializeButtonListeners();
             }
 
             @Override
             public void onClick(View view) {
-                onGroupSelectedListener.onGroupClicked(getAdapterPosition());
+                groupViewListener.onGroupClicked(getAdapterPosition());
 
             }
 
@@ -65,23 +77,35 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
             public interface getMembers{
                 void setMembers(String name);
             }
-            public void onClick(){
+
+            // by doing this we get access to the name of the group which the user interacted with
+            public void initializeButtonListeners(){
                 joinButton.setOnClickListener((view -> {
                         joinButtonListener.joinGroupClicked(groupNameView.getText().toString());
                 }));
                 refreshButton.setOnClickListener((view ->{
                         refreshButtonListener.refreshGroupClicked(groupNameView.getText().toString());
                 }));
+                leaveButton.setOnClickListener((view ->{
+                        leaveButtonListener.leaveGroupClicked(groupNameView.getText().toString());
+                }));
+                
             }
-            public interface onRefreshGroupClicked{
-                void refreshGroupClicked(String name);
-            }
-            public interface onJoinGroupClicked {
+
+            public interface joinGroupListener {
                 void joinGroupClicked(String groupName);
             }
-            public interface OnGroupSelectedListener {
+            public interface leaveGroupListener {
+                void leaveGroupClicked(String groupName);
+            }
+            public interface refreshGroupListener {
+                void refreshGroupClicked(String name);
+            }
+
+            public interface groupViewListener {
                 void onGroupClicked(int pos);
             }
+
         }
 
 
@@ -91,11 +115,13 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
          * @param dataSet String[] containing the data to populate views to be used
          * by RecyclerView.
          */
-        public GroupAdapter(List<String> dataSet, ViewHolder.OnGroupSelectedListener onGroupSelectedListener, ViewHolder.onJoinGroupClicked groupSelectedListener, ViewHolder.onRefreshGroupClicked refreshGroupListener) {
+        public GroupAdapter(List<String> dataSet, ViewHolder.groupViewListener groupViewListener, ViewHolder.joinGroupListener joinGroupListener, ViewHolder.refreshGroupListener refreshGroupListener, ViewHolder.leaveGroupListener leaveGroupListener) {
             localDataSet = dataSet;
-            this.groupSelectedListener = onGroupSelectedListener;
-            this.joinGroupListener = groupSelectedListener;
+            this.joinGroupListener = joinGroupListener;
+            this.leaveGroupListener = leaveGroupListener;
             this.refreshGroupListener = refreshGroupListener;
+
+            this.groupSelectedListener = groupViewListener;
 
         }
 
@@ -114,7 +140,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
 
 
             //tV.setBackground(view.getResources().getDrawable(R.drawable.mesh1));
-            return new ViewHolder(view, groupSelectedListener, joinGroupListener, refreshGroupListener);
+            return new ViewHolder(view, groupSelectedListener, joinGroupListener, refreshGroupListener, leaveGroupListener);
         }
 
         // Replace the contents of a view (invoked by the layout manager)

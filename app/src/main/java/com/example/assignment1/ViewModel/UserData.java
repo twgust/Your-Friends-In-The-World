@@ -7,9 +7,28 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.assignment1.controller.entity.Location;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserData extends ViewModel {
     private MutableLiveData<String> userID;
     private MutableLiveData<Location> userLocation;
+    private MutableLiveData<List<String>> userID_MutableList;
+    private ArrayList<String> userID_arrayList;
+
+    public void addUserID(String userid){
+        if(userID_arrayList == null){
+            userID_arrayList = new ArrayList<>();
+        }
+        if(userID_MutableList == null){
+            userID_MutableList = new MutableLiveData<>();
+        }
+        userID_arrayList.add(userid);
+        userID_MutableList.setValue(userID_arrayList);
+    }
+    public MutableLiveData<List<String>> getUserIDList(){
+        return userID_MutableList;
+    }
 
     public void setUserID(String user_ID) {
         if(userID == null){

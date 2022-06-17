@@ -35,7 +35,7 @@
                     android:layout_height="match_parent"
                     android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
                     android:gravity="center"
-                    android:text="Browse current group">
+                    android:text="Browse current groups">
 
                 </com.google.android.material.textview.MaterialTextView>
                 <LinearLayout
@@ -60,7 +60,7 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                     app:drawableStartCompat="@drawable/xml_icon_person_24"
-                    android:text="15 online"
+                    android:text="0 Group registered"
                     android:layout_gravity="center"
                     >
 

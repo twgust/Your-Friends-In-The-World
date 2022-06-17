@@ -25,8 +25,11 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.io.IOException;
 import java.util.Objects;
 
-public class Fragment_LogIn extends Fragment
-        implements GroupAdapter.ViewHolder.OnGroupSelectedListener, GroupAdapter.ViewHolder.onJoinGroupClicked, GroupAdapter.ViewHolder.onRefreshGroupClicked{
+public class Fragment_LogIn extends Fragment implements
+        GroupAdapter.ViewHolder.joinGroupListener,
+        GroupAdapter.ViewHolder.leaveGroupListener,
+        GroupAdapter.ViewHolder.refreshGroupListener,
+        GroupAdapter.ViewHolder.groupViewListener {
     public static final String TAG = "Fragment_LogIn";
 
     private MaterialButton button;
@@ -40,8 +43,6 @@ public class Fragment_LogIn extends Fragment
     private Fragment_Groups.GROUPS_REFRESH groups_refresh;
     private Fragment_Groups.GROUP_REFRESH group_refresh;
 
-    //TODO DEPRECATED
-    private MaterialToolbar toolbar;
 
     private RecyclerView recyclerView;
 
@@ -62,7 +63,7 @@ public class Fragment_LogIn extends Fragment
             if (groups.isEmpty()){
                 Log.d("Fragment_LogIn", "onCreateView: no groups exist yet");
             }
-            GroupAdapter adapter = new GroupAdapter(groups, this, this, this);
+            GroupAdapter adapter = new GroupAdapter(groups, this, this, this, this);
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new GridLayoutManager(getContext(),2));
         });
@@ -73,9 +74,13 @@ public class Fragment_LogIn extends Fragment
 
     @Override
     public void refreshGroupClicked(String name) {
-        group_refresh.GROUP_byName(name);
+        group_refresh.GROUPS_onGroupViewCLicked(name);
     }
 
+    @Override
+    public void leaveGroupClicked(String groupName) {
+
+    }
 
 
     public interface GroupNameListener {
@@ -88,10 +93,12 @@ public class Fragment_LogIn extends Fragment
         groupNameListener.LOGIN_onGroupClicked(groupName);
         Toast.makeText(requireActivity(), getResources().getString(R.string.placeholderGroup), Toast.LENGTH_LONG).show();
     }
-    // ---->
+
     public interface GroupSelectedListener {
         void LOGIN_onGroupClicked(int pos);
     }
+
+
     @Override
     public void onGroupClicked(int pos) {
         System.out.println("WTF IS A " + pos);
@@ -101,7 +108,7 @@ public class Fragment_LogIn extends Fragment
     // <----
 
     public interface LoginListener{
-        void onLoginButtonClicked(String groupname, String username) throws IOException;
+        void LOGIN_onLoginClicked(String groupname, String username) throws IOException;
     }
 
     private void addButtonListener(){
@@ -109,15 +116,12 @@ public class Fragment_LogIn extends Fragment
             String groupname = Objects.requireNonNull(textFieldgroupName.getText()).toString();
             String username = Objects.requireNonNull(textFieldUserName.getText()).toString();
             if(!groupname.isEmpty() && !username.isEmpty()){
-                try {
-                    loginListener.onLoginButtonClicked(groupname,username);
-                    textFieldgroupName.setText("");
-                    textFieldUserName.setText(""); }
+                try { loginListener.LOGIN_onLoginClicked(groupname,username); }
                 catch (IOException e) { e.printStackTrace(); }
             }
         });
         refreshButton.setOnClickListener(view ->{
-            groups_refresh.GROUPS_refresh();
+            groups_refresh.GROUPS_onRefreshClicked();
         });
     }
 

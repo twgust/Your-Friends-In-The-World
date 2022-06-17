@@ -18,7 +18,6 @@ import com.example.assignment1.R;
 import com.example.assignment1.View.Adapters.MessagesAdapter;
 import com.example.assignment1.ViewModel.TextMessages;
 import com.example.assignment1.ViewModel.UserData;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -61,8 +60,8 @@ public class Fragment_Chat extends Fragment {
     }
 
     public interface SendMessageListener{
-        void onSendMessageButtonClicked(String userID, String textMessage);
-        void onSendImageButtonClicked(String userID, String textMessage, String longitude, String latitude);
+        void CHAT_onSendMessageClicked(String userID, String textMessage);
+        void CHAT_onSendImgMessageClicked(String userID, String textMessage, String longitude, String latitude);
     }
 
     private void addSendButtonListener(View view){
@@ -72,7 +71,7 @@ public class Fragment_Chat extends Fragment {
             try{
                 String message = Objects.requireNonNull(textInputEditText.getText()).toString();
                 String userID = Objects.requireNonNull(userData.getUserID().getValue());
-                listener.onSendMessageButtonClicked(userID, message);
+                listener.CHAT_onSendMessageClicked(userID, message);
                 //TODO solve hardcoding
                 //listener.onSendImageButtonClicked(userID, message,  "12.979154", "55.613393");
             }catch (Exception e){

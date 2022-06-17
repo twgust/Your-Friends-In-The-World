@@ -44,14 +44,11 @@ public class MainActivity extends AppCompatActivity implements
         Fragment_LogIn.GroupNameListener,
         Fragment_LogIn.GroupSelectedListener,
         Fragment_Chat.SendMessageListener,
-        Fragment_Groups.GROUPS_ON_JOIN_CLICK,
+        Fragment_Groups.GROUPS_JOIN,
+        Fragment_Groups.GROUPS_LEAVE,
         Fragment_Groups.GROUPS_REFRESH,
         Fragment_Groups.GROUP_REFRESH
 {
-
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-    private static final int READ_PERMISSION_REQUEST_CODE = 2;
-    private static final int WRITE_PERMISSION_REQUEST_CODE = 3;
     private static final String TAG = "MainActivity";
     private Controller controller;
 
@@ -184,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements
                         Log.d(TAG, "onReceive: Register");
                         String id = intent.getStringExtra("id");
                         userDataModel.setUserID(id);
+                        userDataModel.addUserID(id);
                         Toast.makeText(getApplicationContext(), "Signed in as '" + id + "'", Toast.LENGTH_SHORT).show();
                         // setup navigation when a user has registered
                         bottomNavigation();
@@ -288,40 +286,50 @@ public class MainActivity extends AppCompatActivity implements
      */
     @SuppressLint("MissingPermission")
     @Override
-    public void onLoginButtonClicked(String groupname, String username)  {
+    public void LOGIN_onLoginClicked(String groupname, String username)  {
         controller.registerToGroup(groupname,username);
         switchFragment(fragment_Map);
     }
     @Override
-    public void onSendMessageButtonClicked(String userID, String textMessage) {
+    public void LOGIN_onGroupClicked(String name) { controller.getMembersInGroup(name); }
+    @Override
+    public void LOGIN_onGroupClicked(int pos) { }
+
+
+    @Override
+    public void CHAT_onSendMessageClicked(String userID, String textMessage) {
         controller.sendTextMessage(userID, textMessage);
     }
     @Override
-    public void onSendImageButtonClicked(String userID, String textMessage, String longitude, String latitude) {
+    public void CHAT_onSendImgMessageClicked(String userID, String textMessage, String longitude, String latitude) {
         controller.sendImageMessage(userID,textMessage,longitude,latitude );
     }
-    @Override
-    public void LOGIN_onGroupClicked(String name) { controller.getMembersInGroup(name); }
-    @Override
-    public void LOGIN_onGroupClicked(int pos) {
-
-    }
 
 
     @Override
-    public void GROUPS_OnJoinClicked(String name) {
-        switchFragment(fragment_logIn);
-        controller.unregister(userDataModel.getUserID());
+    public void GROUPS_onJoinClicked(String name) {
         //TODO
-        // call unregister func in controller
-        //
+        // call UserData, check if 'name' (group name) exists in the list of groups
+        // if it exists, notify user that the action won't finish since they are already registered
+        // to the group they wish to join
+        // else --> open up a dialog where they can input user name with groupname already set.
+        switchFragment(fragment_logIn);
+
+    }
+    @Override
+    public void GROUPS_onLeaveClicked(String name) {
+        //TODO
+        // call UserData, check if 'name' (group name) exists in the list of groups
+        // if it doesn't exist, notify user that the action won't finish since they aren't registered
+        // to the group they wish to leave.
+        // else --> call unregister and notify with Toast.
     }
 
     @Override
-    public void GROUPS_refresh() { controller.getRegisteredGroups(); }
+    public void GROUPS_onRefreshClicked() { controller.getRegisteredGroups(); }
 
     @Override
-    public void GROUP_byName(String name) {
-        controller.getMembersInGroup(name);
-    }
+    public void GROUPS_onGroupViewCLicked(String name) { controller.getMembersInGroup(name); }
+
+
 }

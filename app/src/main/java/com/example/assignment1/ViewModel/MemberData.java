@@ -37,9 +37,11 @@ public class MemberData extends ViewModel {
     }
 
     public void loadMemberLocations(ArrayList<String> locations){
+
         if(this.memberLocationsList == null){
             this.memberLocationsList = new MutableLiveData<>();
         }
+
         ArrayList<MemberLocation> memberLocations = new ArrayList<>();
         for (String s: locations) {
             String[] arr = s.split(",");
@@ -72,6 +74,7 @@ public class MemberData extends ViewModel {
             Log.d(TAG, "ViewModel.LoadMembers: Members updated in ViewModel");
         }catch (Exception e){e.printStackTrace(); }
     }
+
     public MutableLiveData<Group> getMembersForGroup(){
         if(group == null){
             group = new MutableLiveData<>();
