@@ -175,13 +175,16 @@ public class MainActivity extends AppCompatActivity implements
         NetworkBroadcastReceiver mMessageReceiver = new NetworkBroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction().toString();
+                String action = intent.getAction();
                 switch (action) {
                     case "REGISTER":
                         Log.d(TAG, "onReceive: Register");
                         String id = intent.getStringExtra("id");
+                        String[] idSubstring = id.split(",");
+
                         userDataModel.setUserID(id);
                         userDataModel.addUserID(id);
+                        userDataModel.addGroup(idSubstring[0]);
                         Toast.makeText(getApplicationContext(), "Signed in as '" + id + "'", Toast.LENGTH_SHORT).show();
                         // setup navigation when a user has registered
                         bottomNavigation();
@@ -313,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements
         // if it exists, notify user that the action won't finish since they are already registered
         // to the group they wish to join
         // else --> open up a dialog where they can input user name with groupname already set.
-        switchFragment(fragment_logIn);
+        // switchFragment(fragment_logIn);
 
     }
     @Override

@@ -13,8 +13,24 @@ import java.util.List;
 public class UserData extends ViewModel {
     private MutableLiveData<String> userID;
     private MutableLiveData<Location> userLocation;
+
+    private MutableLiveData<List<String>> userGroups;
+    private ArrayList<String> userGroups_arrayList;
+
     private MutableLiveData<List<String>> userID_MutableList;
     private ArrayList<String> userID_arrayList;
+
+    public void addGroup(String groupName){
+        if(userGroups == null){
+            userGroups = new MutableLiveData<>();
+
+        }
+        if (userGroups_arrayList == null ){
+            userGroups_arrayList = new ArrayList<>();
+        }
+        userGroups_arrayList.add(groupName);
+        userGroups.setValue(userGroups_arrayList);
+    }
 
     public void addUserID(String userid){
         if(userID_arrayList == null){
@@ -26,6 +42,13 @@ public class UserData extends ViewModel {
         userID_arrayList.add(userid);
         userID_MutableList.setValue(userID_arrayList);
     }
+    public MutableLiveData<List<String>> getUserGroups(){
+        if(userGroups == null){
+            userGroups = new MutableLiveData<>();
+        }
+        return userGroups;
+    }
+
     public MutableLiveData<List<String>> getUserIDList(){
         return userID_MutableList;
     }
