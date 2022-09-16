@@ -22,6 +22,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 
@@ -51,6 +52,12 @@ public class MainActivity extends AppCompatActivity implements
 {
     private static final String TAG = "MainActivity";
     private Controller controller;
+
+    public static final int signInMenuItem = 0;
+    public static final int groupsMenuItem = 1;
+    public static final int chatMenuItem = 2;
+    public static final int mapsMenuItem = 3;
+
 
     public static FragmentManager fragmentManager;
     private Fragment_LogIn fragment_logIn;
@@ -131,8 +138,10 @@ public class MainActivity extends AppCompatActivity implements
 
     private void bottomNavigation(){
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        bottomNavigationView.setSelected(false);
+        bottomNavigationView.getMenu().getItem(mapsMenuItem).setChecked(true);
         bottomNavigationView.setOnItemSelectedListener(item -> {
+            // for each item clicked, update group count.
+            controller.getRegisteredGroups();
             if(item.getItemId() == R.id.page_2_groups){
                 Log.d(TAG, "bottomNavigation: FRAGMENT: GROUPS");
                 switchFragment(fragment_Groups);
@@ -159,7 +168,9 @@ public class MainActivity extends AppCompatActivity implements
         if(fragment instanceof Fragment_LogIn)
         { fragmentTransaction.replace(R.id.fragment_container, fragment, "LOGIN"); }
         else if (fragment instanceof Fragment_Maps)
-        { fragmentTransaction.replace(R.id.fragment_container, fragment, "MAPS"); }
+        {
+            fragmentTransaction.replace(R.id.fragment_container, fragment, "MAPS");
+        }
         else if (fragment instanceof Fragment_Chat)
         { fragmentTransaction.replace(R.id.fragment_container, fragment,"CHAT"); }
         else if (fragment instanceof Fragment_Groups)
@@ -213,7 +224,6 @@ public class MainActivity extends AppCompatActivity implements
                         Log.d(TAG, "onReceive: Members");
                         int count = 0;
                         memberModel.loadMembersInAGroup(intent.getStringArrayListExtra("name"));
-                        //TODO UPDATE VIEWMODEL
                         break;
 
                     case "GROUPS":
@@ -332,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements
     public void GROUPS_onRefreshClicked() { controller.getRegisteredGroups(); }
 
     @Override
-    public void GROUPS_onGroupViewCLicked(String name) { controller.getMembersInGroup(name); }
+    public void GROUP_onRefreshAllGroupsClicked(String name) { controller.getMembersInGroup(name); }
 
 
 }

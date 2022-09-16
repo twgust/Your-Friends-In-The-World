@@ -38,6 +38,7 @@
                     android:text="Browse current groups">
 
                 </com.google.android.material.textview.MaterialTextView>
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -78,6 +79,18 @@
                 app:layout_constraintEnd_toEndOf="parent">
 
         </androidx.recyclerview.widget.RecyclerView>
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/groupNewGroup"
+            style="@style/Widget.Material3.Button.ElevatedButton.Icon"
+            android:text="new group"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            >
+
+        </com.google.android.material.button.MaterialButton>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     </com.google.android.material.card.MaterialCardView>

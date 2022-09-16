@@ -39,7 +39,7 @@ public class ConnectThread implements Runnable {
             try {
                 Log.d(TAG, "ConnectThread.run: connecting to server.. THREAD = <" + Thread.currentThread()+">");
 
-                String ipString = "192.168.0.30";
+                String ipString = "172.20.10.2";
                 InetAddress address = InetAddress.getByName(ipString);
 
                 socket = new Socket(address, port);

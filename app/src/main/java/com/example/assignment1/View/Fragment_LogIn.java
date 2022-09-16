@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.assignment1.R;
 import com.example.assignment1.View.Adapters.GroupAdapter;
 import com.example.assignment1.ViewModel.MemberData;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -74,7 +73,7 @@ public class Fragment_LogIn extends Fragment implements
 
     @Override
     public void refreshGroupClicked(String name) {
-        group_refresh.GROUPS_onGroupViewCLicked(name);
+        group_refresh.GROUP_onRefreshAllGroupsClicked(name);
     }
 
     @Override
@@ -121,6 +120,7 @@ public class Fragment_LogIn extends Fragment implements
             }
         });
         refreshButton.setOnClickListener(view ->{
+
             groups_refresh.GROUPS_onRefreshClicked();
         });
     }

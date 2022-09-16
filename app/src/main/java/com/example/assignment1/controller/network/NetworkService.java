@@ -215,7 +215,9 @@ public class NetworkService extends Service implements LocationListener {
             catch (Exception e) { e.printStackTrace(); }
         });
     }
-
+    private synchronized void setRegistered(boolean isRegistered){
+        this.isRegistered = isRegistered;
+    }
 
     public void registerRequest(String registerRequest) {
         Future<?> awaitRegistration;
@@ -419,8 +421,7 @@ public class NetworkService extends Service implements LocationListener {
                             String[] registerResponse = JSONParser.parseRegistrationResponse(responseBody);
                             userID = registerResponse[1];
                             group = registerResponse[0];
-                            isRegistered = true;
-
+                            setRegistered(true);
                             Intent registerIntent = new Intent("REGISTER");
                             registerIntent.putExtra("group", registerResponse[0]);
                             registerIntent.putExtra("id", registerResponse[1]);
@@ -434,7 +435,7 @@ public class NetworkService extends Service implements LocationListener {
                             unregisterIntent.putExtra("unregister", unregisterResponse);
                             LocalBroadcastManager.getInstance(serviceContext)
                                     .sendBroadcast(unregisterIntent);
-                            isRegistered = false;
+                            setRegistered(false);
                             break;
 
                         case "members":
@@ -466,8 +467,7 @@ public class NetworkService extends Service implements LocationListener {
                             break;
 
                         case "location":
-                            HashMap<String, String> locationResponse =
-                                    JSONParser.parseLocationResponse(responseBody);
+                            HashMap<String, String> locationResponse = JSONParser.parseLocationResponse(responseBody);
                             Intent locationIntent = new Intent("LOCATION");
                             locationIntent.putExtra("longitude", locationResponse.get("longitude"));
                             locationIntent.putExtra("latitude", locationResponse.get("latitude"));
